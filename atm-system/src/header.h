@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sqlite3.h>
 
 struct Date
 {
@@ -30,11 +31,16 @@ struct User
 };
 
 // authentication functions
-void loginMenu(char a[50], char pass[50]);
-void registerMenu(char a[50], char pass[50]);
-const char *getPassword(struct User u);
+int loginMenu(char a[50], char pass[50]);
+int registerMenu(char a[50], char pass[50]);
+const char *getPassword(struct User *u, sqlite3 *udb);
 
 // system function
 void createNewAcc(struct User u);
 void mainMenu(struct User u);
 void checkAllAccounts(struct User u);
+
+// database functions
+sqlite3* dataBase(int i);
+void get_current_date(struct Date *now);
+void clearBuffer();
