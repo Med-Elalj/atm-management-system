@@ -1,16 +1,13 @@
-objects = src/main.o src/system.o src/auth.o
+# List of object files
+objects = src/main.o src/system.o src/auth.o src/db.o
 
-atm : $(objects)
-	cc -o atm $(objects)
+# The default target
+atm: $(objects)
+	rm -f atm
+	cc -o atm $(objects) -lsqlite3
+	rm -f $(objects)
 
-main.o : src/header.h
-kbd.o : src/header.h
-command.o : src/header.h
-display.o : src/header.h
-insert.o : src/header.h
-search.o : src/header.h
-files.o : src/header.h
-utils.o : src/header.h
 
-clean :
+# Rule to clean up the build artifacts
+clean:
 	rm -f $(objects)
