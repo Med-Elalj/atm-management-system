@@ -33,7 +33,8 @@ struct User
 // authentication functions
 int loginMenu(char a[50], char pass[50]);
 int registerMenu(char a[50], char pass[50]);
-const char *getPassword(struct User *u, sqlite3 *udb);
+void getPassword(struct User *u, sqlite3 *udb,char password[50]);
+int registerUser(char a[50], char pass[50]);
 
 // system function
 void createNewAcc(struct User u);
@@ -44,3 +45,7 @@ void checkAllAccounts(struct User u);
 sqlite3* dataBase(int i);
 void get_current_date(struct Date *now);
 void clearBuffer();
+
+// cli functions
+int isalphanum(int c);
+void *getinput(char *in, int max);

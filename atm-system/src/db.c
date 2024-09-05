@@ -30,13 +30,13 @@ sqlite3* dataBase(int i) {
     if (i == 0) {
         createTableSQL = 
             "CREATE TABLE IF NOT EXISTS users ("
-            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
             "username TEXT NOT NULL UNIQUE, "
             "password TEXT NOT NULL);";
     } else {
         createTableSQL = 
             "CREATE TABLE IF NOT EXISTS accounts ("
-            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
             "user_id INTEGER NOT NULL, "
             "user_name TEXT NOT NULL, "
             "account_id INTEGER NOT NULL, "

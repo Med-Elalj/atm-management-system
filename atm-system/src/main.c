@@ -74,35 +74,40 @@ int initMenu(struct User *u)
         case 1:
             r = 1;
             r = loginMenu(u->name, u->password);
-            const char *password = getPassword(u,udb);
+            printf("loginMenu() : %d %s\n", r,u->password);
+            char password[50];
+            getPassword(u,udb,password);
+            printf("password:%s\n", password);
             if (password == ""){
-                r = 0;
-                printf("%s\n",password);
+                return 1;
+                // printf("%s\n",password);
             }
             if (r!=1) {
                 printf("\n\nLogin Failed!");
                 return 1;
             }
-            if(strcmp(u->password, password) == 0)
+            int r =strcmp(u->password, password) ;
+            printf("Password compair initmenu %d\n", r);
+            if (r== 0)
             {
-                // printf("\n\nPassword Match!");
+                return 0;
             }
             else
             {
                 printf("\nWrong password!! or User Name\n");
                 return 1;
             }
-            return 0;
         case 2:
             // // student TODO : add your **Registration** function
             // // here
-            // // if (registerMenu(u->name, u->password)==0) {
-            // //     printf("\n\nRegistration Successful!");
-            // // } else {
-            //     printf("\n\nRegistration Failed!");
-            // // };
-            // r = 1;
-            return 1;
+            r = registerUser(u->name, u->password);
+            if (r == 0) {
+                printf("\n\nRegistration Successful!\n");
+
+            }
+            printf("user:%s pass:%s",u->name,u->password);
+            //temporary 1
+                return 1;
         case 3:
             system("clear");
             exit(1);
