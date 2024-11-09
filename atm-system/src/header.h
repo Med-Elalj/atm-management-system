@@ -8,8 +8,15 @@ struct Date
     int month, day, year;
 };
 
-// all fields for each record of an account
-struct Record
+
+struct Transaction
+{
+    int id;
+    int userId;
+
+};
+
+struct Account
 {
     int id;
     int userId;
@@ -32,7 +39,7 @@ struct User
 
 // authentication functions
 int loginMenu(char a[50], char pass[50]);
-int registerMenu(char a[50], char pass[50]);
+int registerMenu(char a[50], char pass[50], sqlite3 *db);
 const char *getPassword(struct User *u, sqlite3 *udb);
 
 // system function

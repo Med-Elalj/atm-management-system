@@ -15,7 +15,7 @@ int execute_sql(sqlite3 *db, const char *sql) {
 sqlite3* dataBase(int i) {
     sqlite3 *db;
     int rc;
-    const char* dbName = (i == 0) ? "data/users.db" : "data/records.db";
+    const char* dbName = "data/main.db";
     
     // Open the database
     rc = sqlite3_open(dbName, &db);
@@ -31,20 +31,21 @@ sqlite3* dataBase(int i) {
         createTableSQL = 
             "CREATE TABLE IF NOT EXISTS users ("
             "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-            "username TEXT NOT NULL UNIQUE, "
-            "password TEXT NOT NULL);";
+            "username VARCHAR(50) NOT NULL UNIQUE, "
+            "password VARCHAR(50) NOT NULL);";
     } else {
         createTableSQL = 
             "CREATE TABLE IF NOT EXISTS accounts ("
             "id INTEGER PRIMARY KEY AUTOINCREMENT, "
             "user_id INTEGER NOT NULL, "
-            "user_name TEXT NOT NULL, "
             "account_id INTEGER NOT NULL, "
             "date_of_creation DATE NOT NULL, "
             "country TEXT NOT NULL, "
             "phone_number TEXT NOT NULL, "
             "balance REAL NOT NULL, "
-            "type_of_account TEXT NOT NULL);";
+            "type_of_account TEXT NOT NULL, "
+            "FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE);"
+        ;
     }
         
         rc = execute_sql(db, createTableSQL);

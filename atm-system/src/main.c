@@ -1,8 +1,8 @@
 #include "header.h"
 #include <sqlite3.h>
 
-    sqlite3 *udb;
-    sqlite3 *adb;
+sqlite3 *udb;
+sqlite3 *adb;
 
 void mainMenu(struct User u)
 {
@@ -74,47 +74,54 @@ int initMenu(struct User *u)
         case 1:
             r = 1;
             r = loginMenu(u->name, u->password);
-            const char *password = getPassword(u,udb);
-            if (password == ""){
-                r = 0;
-                printf("%s\n",password);
-            }
-            if (r!=1) {
-                printf("\n\nLogin Failed!");
-                return 1;
-            }
-            if(strcmp(u->password, password) == 0)
+            const char *password = getPassword(u, udb);
+            if (strcmp(password, "") == 0)
             {
-                // printf("\n\nPassword Match!");
+                r = 0;
+            };
+            if (r != 1)
+            {
+                printf("\n\nLogin Failed!");
+                free((void *)password);
+                return 1;
+            };
+            if (strcmp(u->password, password) == 0)
+            {
+                printf("\n\nWelcome %s", u->name);
             }
             else
             {
-                printf("\nWrong password!! or User Name\n");
+                printf("\nWrong password or User Name\n");
+                free((void *)password);
                 return 1;
             }
+            free((void *)password);
             return 0;
         case 2:
             // // student TODO : add your **Registration** function
             // // here
-            // // if (registerMenu(u->name, u->password)==0) {
-            // //     printf("\n\nRegistration Successful!");
-            // // } else {
-            //     printf("\n\nRegistration Failed!");
-            // // };
-            // r = 1;
-            return 1;
+            if (registerMenu(u->name, u->password, udb) == 0)
+            {
+                printf("\nRegistration Successful!");
+            }
+            else
+            {
+                printf("\n\nRegistration Failed!");
+            };
+            r = 0;
+            return 0;
         case 3:
             system("clear");
             exit(1);
             return 0;
         default:
             printf("Insert a valid operation!\n");
-        }
-    }
+        };
+    };
 };
 
-
-int main() {
+int main()
+{
     struct User u;
 
     // Initialize databases
@@ -122,13 +129,15 @@ int main() {
     adb = dataBase(1);
 
     // Check if databases were opened successfully
-    if (udb == NULL || adb == NULL) {
+    if (udb == NULL || adb == NULL)
+    {
         fprintf(stderr, "Error opening databases.\n");
         return 1; // Exit with an error code
     }
 
     // Initialize user and show menu
-    for (;initMenu(&u) > 0;){
+    for (; initMenu(&u) > 0;)
+    {
     };
     mainMenu(u);
 
