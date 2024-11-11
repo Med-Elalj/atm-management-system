@@ -1,2 +1,4 @@
-*.db
-*.txt
+.*
+atm-system/data/*
+atm-system/src/*.o
+atm-system/atm

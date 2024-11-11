@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sqlite3.h>
+#include <time.h>
 
 struct Date
 {
@@ -9,25 +10,15 @@ struct Date
 };
 
 
-struct Transaction
-{
-    int id;
-    int userId;
-
-};
-
 struct Account
 {
-    int id;
-    int userId;
-    char name[100];
-    char country[100];
+    int accId;
+    int uId;
+    int creationDate;
+    char country[50];
     int phone;
-    char accountType[10];
-    int accountNbr;
-    double amount;
-    struct Date deposit;
-    struct Date withdraw;
+    char accountType[7];
+    int balance;
 };
 
 struct User
@@ -41,11 +32,13 @@ struct User
 int loginMenu(char a[50], char pass[50]);
 int registerMenu(char a[50], char pass[50], sqlite3 *db);
 const char *getPassword(struct User *u, sqlite3 *udb);
+void getuid(struct User *u, sqlite3 *db);
 
 // system function
-void createNewAcc(struct User u);
-void mainMenu(struct User u);
-void checkAllAccounts(struct User u);
+void createNewAcc(struct User u, sqlite3 *db);
+void mainMenu(struct User u, sqlite3 *db);
+void checkAllAccounts(struct User u,sqlite3 *db);
+void queryAccountType(char type[7]);
 
 // database functions
 sqlite3* dataBase(int i);

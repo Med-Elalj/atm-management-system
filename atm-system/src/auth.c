@@ -20,7 +20,7 @@ int validInput(char *input)
     int i;
     for (i = 0; i < strlen(input); i++)
     {
-        if (!isalpha(input[i]))
+        if (!isalpha(input[i])|| input[i]==' ')
         {
             return 0;
         }
@@ -71,7 +71,7 @@ int loginMenu(char a[50], char pass[50])
 
 const char *getPassword(struct User *u, sqlite3 *db)
 {
-    const char *select_sql = "SELECT password FROM users WHERE username = ?;";
+    const char *select_sql = "SELECT uPassword FROM users WHERE uName = ?;";
     sqlite3_stmt *stmt;
     const unsigned char *password_column = NULL;
     int rc;
@@ -93,9 +93,6 @@ const char *getPassword(struct User *u, sqlite3 *db)
         {
             snprintf(password, sizeof(password), "%s", password_column);
             sqlite3_finalize(stmt);
-            printf("Password for user '%s'\n", password);
-            printf("Password for user '%s' is '%s' and ,'%s'\n", u->name, u->password, password);
-            printf("Password matched,%d\n", strcmp((const char *)u->password, password));
             return password;
         }
     }
@@ -107,12 +104,12 @@ const char *getPassword(struct User *u, sqlite3 *db)
     {
         fprintf(stderr, "Execution failed: %s\n", sqlite3_errmsg(db));
     };
-    return "";
+    return NULL;
 }
 
 int checkUsername(const char *username, sqlite3 *db)
 {
-    const char *select_sql = "SELECT COUNT(*) FROM users WHERE username =?;";
+    const char *select_sql = "SELECT COUNT(*) FROM users WHERE uName =?;";
     sqlite3_stmt *stmt;
     int rc;
     int count;
@@ -215,7 +212,7 @@ pass:
         return 1;
     }
     // insert new user into database
-    const char *insert_sql = "INSERT INTO users(username, password) VALUES(?,?);";
+    const char *insert_sql = "INSERT INTO users(uName, uPassword) VALUES(?,?);";
     sqlite3_stmt *stmt;
     int rc;
 
@@ -236,4 +233,36 @@ pass:
     }
     sqlite3_finalize(stmt);
     return 0;
+};
+
+void getuid(struct User *u,sqlite3 *db) {
+    const char *get_uId = "SELECT uId FROM users WHERE uName = ?;";
+    sqlite3_stmt *stmt;
+    int rc;
+    rc = sqlite3_prepare_v2(db, get_uId, -1, &stmt, 0);
+    if (rc!= SQLITE_OK) {
+        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        return;
+    }
+    rc = sqlite3_bind_text(stmt, 1, u->name, -1, SQLITE_TRANSIENT);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Failed to bind parameter: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        return;
+    }
+ rc = sqlite3_step(stmt);
+    if (rc == SQLITE_ROW) {
+        // If we got a row, fetch the uId
+        u->id = sqlite3_column_int(stmt, 0);
+    } else {
+        // If no row is returned, handle the error or case where the user doesn't exist
+        if (rc == SQLITE_DONE) {
+            fprintf(stderr, "User not found: %s\n", u->name);
+        } else {
+            fprintf(stderr, "Failed to execute query: %s\n", sqlite3_errmsg(db));
+        }
+    }
+
+    // Finalize the statement to free resources
+    sqlite3_finalize(stmt);
 };
