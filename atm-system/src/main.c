@@ -3,10 +3,10 @@
 
 void mainMenu(struct User u, sqlite3 *db)
 {
-        system("clear");
+    system("clear");
     while (1)
     {
-        printf("%d %s\n",u.id,u.name);
+        printf("%d %s\n", u.id, u.name);
         int option;
         printf("\n\n\t\t======= ATM =======\n\n");
         printf("\n\t\t-->> Feel free to choose one of the options below <<--\n");
@@ -27,16 +27,20 @@ void mainMenu(struct User u, sqlite3 *db)
             break;
         case 2:
             // student TODO : add your **Update account information** function
+            updateAccount(u, db);
             // here
             break;
         case 3:
             // student TODO : add your **Check the details of existing accounts** function
             // here
+            checkAllAccounts(u, db,0);
+            // system("clear");
             break;
         case 4:
-        // student TODO : add your **Check list of owned accounts** function
-            checkAllAccounts(u,db);
-            system("clear");
+            // student DONE : add your **Check list of owned accounts** function
+            checkAllAccounts(u, db,1);
+            printf("\n\t");
+            // system("clear");
             break;
         case 5:
             // student TODO : add your **Make transaction** function
@@ -134,27 +138,28 @@ int main()
     struct User u;
 
     // Initialize databases
-    sqlite3 *db = dataBase(0);
+    sqlite3 *udb = dataBase(0);
+    sqlite3 *adb = dataBase(1);
 
     // Check if databases were opened successfully
-    if (db == NULL)
+    if (adb == NULL || udb == NULL)
     {
-        fprintf(stderr, "Error opening databases.%p\n", db);
+        fprintf(stderr, "Error opening databases.%p,%p\n", adb, udb);
         return 1; // Exit with an error code
     }
 
     // Initialize user and show menu
-    for (; initMenu(&u, db) > 0;)
+    for (; initMenu(&u, udb) > 0;)
     {
     };
-    getuid(&u,db);
-    mainMenu(u, db);
+    getuid(&u, udb);
+    mainMenu(u, adb);
     // u.id = 1;
     // checkAllAccounts(u,db);
     // printf("Database\n");
     // Close databases
-    sqlite3_close(db);
-    // sqlite3_close(db);
+    sqlite3_close(adb);
+    sqlite3_close(udb);
 
     return 0;
 }

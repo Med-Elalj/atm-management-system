@@ -33,12 +33,15 @@ int loginMenu(char a[50], char pass[50]);
 int registerMenu(char a[50], char pass[50], sqlite3 *db);
 const char *getPassword(struct User *u, sqlite3 *udb);
 void getuid(struct User *u, sqlite3 *db);
+int validInput(char *input);
 
 // system function
 void createNewAcc(struct User u, sqlite3 *db);
 void mainMenu(struct User u, sqlite3 *db);
-void checkAllAccounts(struct User u,sqlite3 *db);
+void checkAllAccounts(struct User u,sqlite3 *db,int t);
 void queryAccountType(char type[7]);
+void updateAccount(struct User u,sqlite3 *db);
+int is_all_digits(const char *str);
 
 // database functions
 sqlite3* dataBase(int i);

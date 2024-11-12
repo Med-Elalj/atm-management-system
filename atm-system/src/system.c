@@ -4,67 +4,11 @@
 
 const char *RECORDS = "./data/records.txt";
 
-// int getAccountFromFile(FILE *ptr, char name[50], struct Record *r)
-// {
-//     return fscanf(ptr, "%d %d %s %d %d/%d/%d %s %d %lf %s",
-//                   &r->id,
-// 		  &r->userId,
-// 		  name,
-//                   &r->accountNbr,
-//                   &r->deposit.month,
-//                   &r->deposit.day,
-//                   &r->deposit.year,
-//                   r->country,
-//                   &r->phone,
-//                   &r->amount,
-//                   r->accountType) != EOF;
-// }
-
-// void saveAccountToFile(FILE *ptr, struct User u, struct Record r)
-// {
-//     fprintf(ptr, "%d %d %s %d %d/%d/%d %s %d %.2lf %s\n\n",
-//             r.id,
-// 	        u.id,
-// 	        u.name,
-//             r.accountNbr,
-//             r.deposit.month,
-//             r.deposit.day,
-//             r.deposit.year,
-//             r.country,
-//             r.phone,
-//             r.amount,
-//             r.accountType);
-// }
-
-// void success(struct User u)
-// {
-//     int option;
-//     printf("\n✔ Success!\n\n");
-// invalid:
-//     printf("Enter 1 to go to the main menu and 0 to exit!\n");
-//     scanf("%d", &option);
-//     system("clear");
-//     if (option == 1)
-//     {
-//         mainMenu(u);
-//     }
-//     else if (option == 0)
-//     {
-//         exit(1);
-//     }
-//     else
-//     {
-//         printf("Insert a valid operation!\n");
-//         goto invalid;
-//     }
-// }
-
 void createNewAcc(struct User u, sqlite3 *db)
 {
     struct Account a;
     a.uId = u.id;
-    a.creationDate = time(NULL) / 86400;
-    char userName[50];
+    a.creationDate = 1731679260 / 86400;
     int s = 0;
 noAccount:
     queryAccountType(a.accountType);
@@ -171,32 +115,40 @@ void queryAccountType(char type[7])
     };
 };
 
-void checkAllAccounts(struct User u, sqlite3 *db)
+void checkAllAccounts(struct User u, sqlite3 *db, int t)
 {
-    while (getchar() != '\n')
-    {
-    };
+checkAllAccounts:
     system("clear");
-    // const char *count_statment = "SELECT COUNT(*) FROM accounts WHERE uId = ?;";
-    const char *select_sql = "SELECT * FROM accounts WHERE uId =?;";
+    const const char *select_sql, *pTempl0, *pTempl1;
+    switch (t)
+    {
+    case 0:
+        select_sql = "SELECT accID FROM accounts WHERE uId =?;";
+        pTempl0 = "Account numbers\n";
+        pTempl1 = "%d \n";
+        break;
+    case 1:
+        select_sql = "SELECT * FROM accounts WHERE uId =?;";
+        pTempl0 = "Account number  Date of creation  Country  Phone      Account type   Balance \n";
+        pTempl1 = "%14d  %10.10s  %4s %8.8s %11s     %7s     %5.10d.%2.2d \n";
+        break;
+    default:
+        return;
+    }
     sqlite3_stmt *stmt;
     int rc;
     rc = sqlite3_prepare_v2(db, select_sql, -1, &stmt, 0);
     if (rc != SQLITE_OK)
     {
         fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        while (getchar() != 10)
+        {
+        };
         return;
     }
     sqlite3_bind_int(stmt, 1, u.id);
-    // rc = sqlite3_step(stmt);
-    // if (rc!= SQLITE_ROW)
-    // {
-    //     fprintf(stderr, "Failed to select user: %s\n", sqlite3_errmsg(db));
-    //     sqlite3_finalize(stmt);
-    //     return;
-    // }
 
-    printf("Account number  Date of creation  Country  Phone      Account type   Balance \n");
+    printf("%s", pTempl0);
     for (rc = sqlite3_step(stmt); rc == SQLITE_ROW; rc = sqlite3_step(stmt))
     {
         // Extract the integer value from the first column (id)
@@ -205,8 +157,16 @@ void checkAllAccounts(struct User u, sqlite3 *db)
         f[10] = '\0';
         f[24] = '\0';
         int b = sqlite3_column_int(stmt, 6);
-        printf("%14d  %10.10s  %4s %8.8s %11s     %7s     %5.10d.%2.2d \n",
-               sqlite3_column_int(stmt, 0), f, &f[20], sqlite3_column_text(stmt, 3), sqlite3_column_text(stmt, 4), sqlite3_column_text(stmt, 5), b / 100, b % 100);
+        if (t == 0)
+        {
+            printf(pTempl1, sqlite3_column_int(stmt, 0));
+        }
+        else
+        {
+            printf(pTempl1,
+                   sqlite3_column_int(stmt, 0), f, &f[20], sqlite3_column_text(stmt, 3),
+                   sqlite3_column_text(stmt, 4), sqlite3_column_text(stmt, 5), b / 100, b % 100);
+        }
     }
 
     // Check if there was an error with the query execution
@@ -217,25 +177,114 @@ void checkAllAccounts(struct User u, sqlite3 *db)
 
     // Finalize the statement and close the database
     sqlite3_finalize(stmt);
-    sqlite3_close(db);
     printf("\n");
-    printf("All accounts for user %s are listed above.\n", u.name);
-    printf("Press ENTER to continue\n");
-    printf("%d\n", getchar());
-    while (1)
+end:
+    printf("All of your(%s) accounts are listed above.\n\tR : Refrech.\n\tQ : Quit.\n", u.name);
+    char c;
+    printf("%d", scanf(" %c", &c));
+    switch (c)
     {
-        /* code */
+    case 'q':
+    case 'Q':
+        return;
+    case 'r':
+    case 'R':
+        goto checkAllAccounts;
+    default:
+        goto end;
+    }
+};
+
+void updateAccount(struct User u, sqlite3 *db)
+{
+    int id = 0;
+    char phone[12];
+    const const char *update_sql;
+    char c;
+
+    do
+    {
+        id = 0;
+        printf("\nEnter the account number you want to update : ");
+        while (getchar() != '\n')
+            ;
+
+    } while (scanf("%d", &id) == 0);
+
+    do
+    {
+        c = 0;
+        printf("witch info do you want to update ?\n\t[1] : Phone number\n\t[2] : Country of the Account\n");
+        scanf(" %c", &c);
+        while (getchar() != '\n')
+            ;
+    } while (c != '1' && c != '2');
+
+    if (c == '1')
+    {
+        update_sql = "UPDATE accounts SET phonenumber =? WHERE accID =? AND uID =? AND (SELECT COUNT(*) FROM accounts WHERE accID = ? AND uID = ?) = 1;";
+        do
+        {
+            printf("\nEnter the new phone number: ");
+            while (getchar() != '\n')
+                ;
+        } while (scanf("%11s", &phone[0]) == 0 || strlen(phone) < 10 || !is_all_digits(phone) || getchar() != 0);
+    }
+    else
+    {
+        update_sql = "UPDATE accounts SET country =? WHERE accID =? AND uID =? AND (SELECT COUNT(*) FROM accounts WHERE accID = ? AND uID = ?) = 1;";
+        queryAccountType(phone);
     };
-    while (1)
+    do
     {
-        if (getchar() != 0)
-        {
-            break;
-        }
-        else
-        {
-        };
+        c = 0;
+        printf("\nDo you want to update the information of account number %d to %s? (Y/N): ", id, phone);
+        scanf(" %c", &c);
+        while (getchar() != '\n')
+            ;
+    } while (c != 'y' && c != 'Y' && c != 'n' && c != 'N');
+    if (c == 'n' || c == 'N')
+    {
+        printf("\n\nPhone number not updated.\n\n");
+        return;
+    }
+    sqlite3_stmt *stmt;
+    int rc;
+
+    rc = sqlite3_prepare_v2(db, update_sql, -1, &stmt, 0);
+    if (rc != SQLITE_OK)
+    {
+        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        return;
     }
 
+    sqlite3_bind_text(stmt, 1, phone, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int(stmt, 2, id);
+    sqlite3_bind_int(stmt, 3, u.id);
+    sqlite3_bind_int(stmt, 4, id);
+    sqlite3_bind_int(stmt, 5, u.id);
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE)
+    {
+        fprintf(stderr, "Failed to update : %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        return;
+    }
+    printf("%d", rc);
+    sqlite3_finalize(stmt);
+    printf("\n\nPhone number updated successfully!\n\n");
     return;
 };
+
+int is_all_digits(const char *str)
+{
+    while (*str)
+    {
+        if (!isdigit(*str))
+        {
+            return 0;
+        }
+        str++;
+    }
+    return 1;
+}
