@@ -44,10 +44,12 @@ void mainMenu(struct User u, sqlite3 *db)
             break;
         case 5:
             // student TODO : add your **Make transaction** function
+            makeTransaction(u, db);
             // here
             break;
         case 6:
             // student TODO : add your **Remove existing account** function
+            removeAccount(u, db);
             // here
             break;
         case 7:
@@ -136,30 +138,31 @@ int main()
 {
     system("clear");
     struct User u;
-
+    sqlite3 *db = NULL;
     // Initialize databases
-    sqlite3 *udb = dataBase(0);
-    sqlite3 *adb = dataBase(1);
+    dataBase(0,&db);
+    dataBase(1,&db);
+    dataBase(2,&db);
 
     // Check if databases were opened successfully
-    if (adb == NULL || udb == NULL)
+    if (db == NULL)
     {
-        fprintf(stderr, "Error opening databases.%p,%p\n", adb, udb);
+        fprintf(stderr, "Error opening database.\n");
         return 1; // Exit with an error code
     }
-
+    printf("Database %p,\n",db);
     // Initialize user and show menu
-    for (; initMenu(&u, udb) > 0;)
+    for (; initMenu(&u, db) > 0;)
     {
     };
-    getuid(&u, udb);
-    mainMenu(u, adb);
+    getuid(&u, db);
+    mainMenu(u, db);
     // u.id = 1;
     // checkAllAccounts(u,db);
     // printf("Database\n");
     // Close databases
-    sqlite3_close(adb);
-    sqlite3_close(udb);
+    sqlite3_close(db);
+    // sqlite3_close(db);
 
     return 0;
 }

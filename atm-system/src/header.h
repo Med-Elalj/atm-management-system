@@ -42,8 +42,10 @@ void checkAllAccounts(struct User u,sqlite3 *db,int t);
 void queryAccountType(char type[7]);
 void updateAccount(struct User u,sqlite3 *db);
 int is_all_digits(const char *str);
+void makeTransaction(struct User u, sqlite3 *db);
+void removeAccount(struct User u,sqlite3 *db);
 
 // database functions
-sqlite3* dataBase(int i);
+void dataBase(int i, sqlite3 **db);
 void get_current_date(struct Date *now);
 void clearBuffer();

@@ -14,33 +14,37 @@ int execute_sql(sqlite3 *db, const char *sql)
 }
 
 // Function to open a database and ensure the table exists
-sqlite3 *dataBase(int i)
+void dataBase(int i, sqlite3 **db)
 {
-    sqlite3 *db;
+    // sqlite3 *db;
     int rc;
-    const char *dbName = "data/main.db";
 
     // Open the database
-    rc = sqlite3_open(dbName, &db);
+    printf("Database %p\n", *db);
+    if (*db == NULL)
+    {
+        rc = sqlite3_open("data/main.db", db);
+    }
+    printf("Database %p\n", *db);
+
     if (rc != SQLITE_OK)
     {
-        fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
-        sqlite3_close(db);
-        return NULL;
+        fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(*db));
+        sqlite3_close(*db);
+        return;
     }
 
     // If the parameter is 0, ensure the "users" table exists
     const char *createTableSQL;
-    if (i == 0)
+    switch (i)
     {
+    case 0:
         createTableSQL =
             "CREATE TABLE IF NOT EXISTS users ("
             "uId INTEGER PRIMARY KEY AUTOINCREMENT, "
             "uName VARCHAR(50) NOT NULL UNIQUE, "
             "uPassword VARCHAR(50) NOT NULL);";
-    }
-    else
-    {
+    case 1:
         createTableSQL =
             "CREATE TABLE IF NOT EXISTS accounts ("
             "accID INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -52,17 +56,28 @@ sqlite3 *dataBase(int i)
             "balance DECIMAL(15, 2), "
             "FOREIGN KEY(uID) REFERENCES users(uId) "
             ");";
+    case 2:
+        createTableSQL =
+            "CREATE TABLE IF NOT EXISTS transactions ( "
+            "transID INTEGER PRIMARY KEY AUTOINCREMENT, "
+            "accID1 INTEGER NOT NULL, "
+            "accID2 INTEGER NOT NULL, "
+            "amount DOUBLE NOT NULL, "
+            "timestamp TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL, "
+            "FOREIGN KEY (accID1) REFERENCES accounts(accID), "
+            "FOREIGN KEY (accID2) REFERENCES accounts(accID) "
+            "); ";
     }
 
-    rc = execute_sql(db, createTableSQL);
+    rc = execute_sql(*db, createTableSQL);
     printf("test:%d\n", rc);
     if (rc != SQLITE_OK)
     {
-        sqlite3_close(db);
-        return NULL;
+        sqlite3_close(*db);
+        return;
     }
 
-    return db;
+    return;
 }
 #include "header.h"
 #include <time.h>

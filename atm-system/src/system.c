@@ -228,7 +228,7 @@ void updateAccount(struct User u, sqlite3 *db)
             printf("\nEnter the new phone number: ");
             while (getchar() != '\n')
                 ;
-        } while (scanf("%11s", &phone[0]) == 0 || strlen(phone) < 10 || !is_all_digits(phone) || getchar() != 0);
+        } while (scanf("%11s", &phone[0]) == 0 || strlen(phone) < 10 || !is_all_digits(phone) || getchar() != 10);
     }
     else
     {
@@ -270,9 +270,16 @@ void updateAccount(struct User u, sqlite3 *db)
         sqlite3_finalize(stmt);
         return;
     }
-    printf("%d", rc);
+
+    if (sqlite3_changes(db) == 0)
+    {
+        printf("\nErr : No changes were made.\n");
+    }
+    else
+    {
+        printf("\n\nInformation updated successfully!\n\n");
+    }
     sqlite3_finalize(stmt);
-    printf("\n\nPhone number updated successfully!\n\n");
     return;
 };
 
@@ -287,4 +294,204 @@ int is_all_digits(const char *str)
         str++;
     }
     return 1;
+};
+
+void makeTransaction(struct User u, sqlite3 *db) /*(sqlite3 *db, double amount, int accID1, const char *uName, int accID2, int uID2)*/
+{
+    int amount, accID1, accID2 = 0;
+    int scan = 0;
+    do
+    {
+        printf("\nEnter the Origin account's account number : ");
+        for (int r = fgetc(stdin); r != EOF && r != 10; r = fgetc(stdin))
+            ;
+        scan = scanf(" %d", &accID2);
+    } while (scan == 0 || accID2 <= 0 && scan != -1);
+    do
+    {
+        printf("\nEnter the Destination account number : ");
+        for (int r = fgetc(stdin); r != EOF && r != 10; r = fgetc(stdin))
+            ;
+        scan = scanf(" %d", &accID1);
+    } while (scan == 0 || accID2 <= 0 && scan != -1);
+    do
+    {
+        printf("\nEnter the amount to transfer : ");
+        for (int r = fgetc(stdin); r != EOF && r != 10; r = fgetc(stdin))
+            ;
+        scan = scanf("%d", &amount);
+    } while (scan == 0);
+    if (accID1 == accID2)
+    {
+        printf("\n\nCannot transfer to the same account.\n\n");
+        return;
+    }
+    char c = 0;
+    do
+    {
+        printf("\nDo you want to proceed with the transaction? (Y/N): ");
+        for (int r = fgetc(stdin); r != EOF && r != 10; r = fgetc(stdin))
+            ;
+        scan = scanf(" %c", &c);
+    } while (scan == 0 || c != 'Y' && c != 'y' && c != 'n' && c != 'N' && scan != -1);
+
+    if (c == 'n' || c == 'N' || scan == -1)
+    {
+        printf("\n\nTransaction cancelled.\n\n");
+        return;
+    }
+    int rc;
+
+    // Begin transaction explicitly
+    rc = sqlite3_exec(db, "BEGIN TRANSACTION;", 0, 0, 0);
+    if (rc != SQLITE_OK)
+    {
+        fprintf(stderr, "Failed to start transaction: %s\n", sqlite3_errmsg(db));
+        return;
+    }
+
+    sqlite3_stmt *stmt[3] = {NULL, NULL, NULL};
+    // Define the SQL statement with multiple queries
+    const char *sql[3] = {"UPDATE accounts SET balance = balance + ? WHERE accID = ? AND uID = (SELECT uId FROM users WHERE uName = ?); ",
+                          "UPDATE accounts SET balance = balance - ? WHERE accID = ? AND uID = ?; ",
+                          "INSERT INTO transactions (accID1, accID2, amount, timestamp) VALUES (?, ?, ?, CURRENT_TIMESTAMP); "};
+
+    // Prepare the SQL statement
+    for (int i = 0; i < 3; i++)
+    {
+
+        rc = sqlite3_prepare_v2(db, sql[i], -1, &stmt[i], NULL);
+        if (rc != SQLITE_OK)
+        {
+            fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+            sqlite3_exec(db, "ROLLBACK;", 0, 0, 0); // Rollback if preparing fails
+            return;
+        }
+    }
+
+    // Bind the values to the statement
+    sqlite3_bind_int(stmt[0], 1, amount);                        // Bind amount to first "?"
+    sqlite3_bind_int(stmt[0], 2, accID1);                        // Bind accID1 to second "?"
+    sqlite3_bind_text(stmt[0], 3, u.name, -1, SQLITE_TRANSIENT); // Bind uName to third "?"
+    sqlite3_bind_int(stmt[1], 1, amount);                        // Bind amount to fourth "?"
+    sqlite3_bind_int(stmt[1], 2, accID2);                        // Bind accID2 to fifth "?"
+    sqlite3_bind_int(stmt[1], 3, u.id);                          // Bind uID2 to sixth "?"
+    sqlite3_bind_int(stmt[2], 1, accID2);                        // Bind accID2 to seventh "?"
+    sqlite3_bind_int(stmt[2], 2, accID1);                        // Bind accID1 to  eighth "?"
+    sqlite3_bind_int(stmt[2], 3, amount);                        // Bind amount to tenth "?"
+
+    // Execute the queries (the transaction)
+    for (int i = 0; i < 3; i++)
+    {
+        rc = sqlite3_step(stmt[i]);
+        if (rc != SQLITE_DONE)
+        {
+            fprintf(stderr, "Execution failed: %s\n", sqlite3_errmsg(db));
+            for (int i1 = 0; i1 < 3; i1++)
+            {
+                sqlite3_finalize(stmt[i1]);
+            };
+            sqlite3_exec(db, "ROLLBACK;", 0, 0, 0); // Rollback if execution fails
+            return;
+        }
+        printf("Execution %d \n", sqlite3_changes(db));
+        if (sqlite3_changes(db) != 1)
+        {
+            printf("\n\nTransaction failed. Please try again.\n\n");
+            for (int i1 = 0; i1 < 3; i1++)
+            {
+                sqlite3_finalize(stmt[i1]);
+            };
+            sqlite3_exec(db, "ROLLBACK;", 0, 0, 0); // Rollback if transaction fails
+            return;
+        }
+    };
+
+    // Commit the transaction
+    rc = sqlite3_exec(db, "COMMIT;", 0, 0, 0);
+    if (rc != SQLITE_OK)
+    {
+        fprintf(stderr, "Failed to commit transaction: %s\n", sqlite3_errmsg(db));
+        sqlite3_exec(db, "ROLLBACK;", 0, 0, 0); // Rollback if commit fails
+        return;
+    }
+
+    // Finalize the statements
+    for (int i1 = 0; i1 < 3; i1++)
+    {
+        sqlite3_finalize(stmt[i1]);
+    };
+    printf("\n\nTransaction successful.\n\n");
+    return;
 }
+
+void removeAccount(struct User u, sqlite3 *db)
+{
+    int accID = 0;
+    int scan = 0;
+    do
+    {
+        printf("\nEnter the account number to delete : ");
+        for (int r = fgetc(stdin); r != EOF && r != 10; r = fgetc(stdin))
+            ;
+        scan = scanf(" %d", &accID);
+    } while (scan == 0 || accID <= 0 && scan != -1);
+
+    char c = 0;
+    do
+    {
+        printf("\nDo you want to proceed with the deletion? (Y/N): ");
+        for (int r = fgetc(stdin); r != EOF && r != 10; r = fgetc(stdin))
+            ;
+        scan = scanf(" %c", &c);
+    } while (scan == 0 || c != 'Y' && c != 'y' && c != 'n' && c != 'N' && scan != -1);
+    if (c == 'n' || c == 'N' || scan == -1)
+    {
+        printf("\n\nDeletion cancelled.\n\n");
+        return;
+    }
+    int rc;
+    rc = sqlite3_exec(db, "BEGIN TRANSACTION;", 0, 0, 0);
+    if (rc != SQLITE_OK)
+    {
+        fprintf(stderr, "Failed to start transaction: %s\n", sqlite3_errmsg(db));
+        return;
+    }
+    // Delete the account from the database
+    sqlite3_stmt *stmt1 = NULL;
+    const char *sql1 = "DELETE FROM accounts WHERE accID =? AND uID =?;";
+    rc = sqlite3_prepare_v2(db, sql1, -1, &stmt1, NULL);
+    if (rc != SQLITE_OK)
+    {
+        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        sqlite3_exec(db, "ROLLBACK;", 0, 0, 0);
+        return;
+    }
+    sqlite3_bind_int(stmt1, 1, accID);
+    sqlite3_bind_int(stmt1, 2, u.id);
+    rc = sqlite3_step(stmt1);
+    if (rc != SQLITE_DONE)
+    {
+        fprintf(stderr, "Execution failed: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt1);
+        sqlite3_exec(db, "ROLLBACK;", 0, 0, 0);
+        return;
+    };
+    if (sqlite3_changes(db) == 0)
+    {
+        printf("\n\nNo account found with the given account number.\n\n");
+        sqlite3_finalize(stmt1);
+        sqlite3_exec(db, "ROLLBACK;", 0, 0, 0);
+        return;
+    };
+    rc = sqlite3_exec(db, "COMMIT;", 0, 0, 0);
+    if (rc != SQLITE_OK)
+    {
+        fprintf(stderr, "Failed to commit transaction: %s\n", sqlite3_errmsg(db));
+        sqlite3_exec(db, "ROLLBACK;", 0, 0, 0);
+        return;
+    };
+    sqlite3_finalize(stmt1);
+    printf("\n\nAccount deleted successfully.\n\n");
+    return;
+};
