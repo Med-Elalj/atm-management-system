@@ -44,6 +44,7 @@ void updateAccount(struct User u,sqlite3 *db);
 int is_all_digits(const char *str);
 void makeTransaction(struct User u, sqlite3 *db);
 void removeAccount(struct User u,sqlite3 *db);
+void transferAccount(struct User u,sqlite3 *db);
 
 // database functions
 void dataBase(int i, sqlite3 **db);

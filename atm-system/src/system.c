@@ -495,3 +495,48 @@ void removeAccount(struct User u, sqlite3 *db)
     printf("\n\nAccount deleted successfully.\n\n");
     return;
 };
+
+void transferAccount(struct User u, sqlite3 *db)
+{
+    int accID1 = 0;
+    int scan = 0;
+    do
+    {
+        printf("\nEnter the account number to be tanfered : ");
+        for (int r = fgetc(stdin); r != EOF && r != 10; r = fgetc(stdin))
+            ;
+        scan = scanf(" %d", &accID1);
+    } while (scan == 0 || accID1 <= 0 && scan != -1);
+    char uname2[50];
+    do
+    {
+        printf("\nEnter the name of the recipient : ");
+        for (int r = fgetc(stdin); r != EOF && r != 10; r = fgetc(stdin))
+            ;
+        scan = scanf(" %49s", &uname2[0]);
+    } while (scan == 0 || (strlen(&uname2[0]) <= 2) && scan != -1);
+    sqlite3_stmt *stmt1 = NULL;
+const char *sql1 = "UPDATE accounts "
+                   "SET uID = (SELECT uID FROM users WHERE uName = ?) "
+                   "WHERE accID = ? AND uID = ?;";
+    sqlite3_prepare_v2(db, sql1, -1, &stmt1, NULL);
+    sqlite3_bind_text(stmt1, 1, uname2, -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt1, 2, accID1);
+    sqlite3_bind_int(stmt1, 3, u.id);
+    int rc = sqlite3_step(stmt1);
+    if (rc != SQLITE_DONE)
+    {
+        fprintf(stderr, "Execution failed: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt1);
+        return;
+    }
+    if (sqlite3_changes(db) == 0)
+    {
+        printf("\n\nNo account found with the given account number or user does not exist.\n\n");
+        sqlite3_finalize(stmt1);
+        return;
+    };
+    sqlite3_finalize(stmt1);
+    printf("\n\nAccount transferred successfully.\n\n");
+    return;
+};

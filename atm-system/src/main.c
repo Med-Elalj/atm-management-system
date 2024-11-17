@@ -54,6 +54,7 @@ void mainMenu(struct User u, sqlite3 *db)
             break;
         case 7:
             // student TODO : add your **Transfer owner** function
+            transferAccount(u, db);
             // here
             break;
         case 8:
