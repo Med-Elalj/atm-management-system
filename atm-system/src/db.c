@@ -44,6 +44,7 @@ void dataBase(int i, sqlite3 **db)
             "uId INTEGER PRIMARY KEY AUTOINCREMENT, "
             "uName VARCHAR(50) NOT NULL UNIQUE, "
             "uPassword VARCHAR(50) NOT NULL);";
+        break;
     case 1:
         createTableSQL =
             "CREATE TABLE IF NOT EXISTS accounts ("
@@ -56,6 +57,7 @@ void dataBase(int i, sqlite3 **db)
             "balance DECIMAL(15, 2), "
             "FOREIGN KEY(uID) REFERENCES users(uId) "
             ");";
+        break;
     case 2:
         createTableSQL =
             "CREATE TABLE IF NOT EXISTS transactions ( "
@@ -67,6 +69,28 @@ void dataBase(int i, sqlite3 **db)
             "FOREIGN KEY (accID1) REFERENCES accounts(accID), "
             "FOREIGN KEY (accID2) REFERENCES accounts(accID) "
             "); ";
+        break;
+    case 3:
+        createTableSQL =
+            "CREATE TRIGGER transfer_balance_after_insert"
+            "BEFORE INSERT ON transactions"
+            "FOR EACH ROW"
+            "BEGIN"
+            "    SELECT"
+            "    CASE"
+            "        WHEN (SELECT balance FROM accounts WHERE accID = NEW.accID1) < NEW.amount THEN"
+            "            RAISE(ABORT, 'Insufficient funds')"
+            "    END;"
+
+            "    UPDATE accounts"
+            "    SET balance = balance - NEW.amount"
+            "    WHERE accID = NEW.accID1;"
+
+            "    UPDATE accounts"
+            "    SET balance = balance + NEW.amount"
+            "    WHERE accID = NEW.accID2;"
+            "END;";
+        break;
     }
 
     rc = execute_sql(*db, createTableSQL);

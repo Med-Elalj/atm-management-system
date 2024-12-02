@@ -30,6 +30,7 @@ int validInput(char *input)
 
 int loginMenu(char a[50], char pass[50])
 {
+    int scan = 0;
     struct termios oflags, nflags;
 
     system("clear");
@@ -37,8 +38,8 @@ int loginMenu(char a[50], char pass[50])
     do
     {
         clearBuffer();
-        scanf("%49s", a);
-    } while (a == "" || a == NULL || !validInput(a));
+        scan = scanf("%49s", a);
+    } while ((a == "" || a == NULL || !validInput(a))&& scan != -1);
 
     // disabling echo
     tcgetattr(fileno(stdin), &oflags);
@@ -57,13 +58,15 @@ int loginMenu(char a[50], char pass[50])
     do
     {
         clearBuffer();
-        scanf("%49s", pass);
-    } while (pass == "" || pass == NULL || !validInput(pass));
-
+        scan = scanf("%49s", pass);
+    } while (scan != -1 && (pass == "" || pass == NULL || !validInput(pass)));
     // restore terminal
     if (tcsetattr(fileno(stdin), TCSANOW, &oflags) != 0)
     {
         perror("tcsetattr");
+        return 0;
+    }
+    if (scan == -1){
         return 0;
     }
     return 1;
@@ -140,6 +143,7 @@ int checkUsername(const char *username, sqlite3 *db)
 
 int registerMenu(char a[50], char pass[50], sqlite3 *db)
 {
+    int scan = 0;
     struct termios oflags, nflags;
 
 start:
@@ -148,8 +152,8 @@ start:
     do
     {
         clearBuffer();
-        scanf("%49s", a);
-    } while (a == "" || a == NULL || !validInput(a));
+        scan = scanf("%49s", a);
+    } while (scan!=-1 && (a == "" || a == NULL || !validInput(a)));
     if (checkUsername(a, db))
     {
         system("clear");
@@ -167,12 +171,13 @@ start:
         system("clear");
         printf("\rCurrent User Login: '%s'\n", a);
         printf("Do you want to keep it? (y/n): ");
-        scanf(" %c", &confirm);
+        clearBuffer();
+        scan = scanf(" %c", &confirm);
         if (confirm == 'n' || confirm == 'N')
         {
             goto start;
         }
-    } while (confirm != 'y' && confirm != 'Y');
+    } while (scan != -1 && (confirm != 'y' && confirm != 'Y'));
 
     // disabling echo
     tcgetattr(fileno(stdin), &oflags);
@@ -191,15 +196,18 @@ pass:
     do
     {
         clearBuffer();
-        scanf("%49s", pass);
-    } while (pass == "" || pass == NULL || !validInput(pass));
+        scan != scanf("%49s", pass);
+    } while (scan!=-1&& (pass == "" || pass == NULL || !validInput(pass)));
     char ver_pass[50];
     printf("\n\n\n\n\n\t\t\t\tConfirm Your password :");
     do
     {
         clearBuffer();
-        scanf("%49s", ver_pass);
-    } while (ver_pass == "" || ver_pass == NULL || !validInput(ver_pass));
+        scan = scanf("%49s", ver_pass);
+    } while (scan != -1 && (ver_pass == "" || ver_pass == NULL || !validInput(ver_pass)));
+    if (scan == -1) {
+        exit(1);
+    }
     if (strcmp(pass, ver_pass) != 0)
     {
         printf("Passwords do not match.\n");

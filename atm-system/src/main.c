@@ -18,7 +18,10 @@ void mainMenu(struct User u, sqlite3 *db)
         printf("\n\t\t[6]- Remove existing account\n");
         printf("\n\t\t[7]- Transfer ownership\n");
         printf("\n\t\t[8]- Exit\n");
-        scanf("%d", &option);
+        clearBuffer();
+        if (scanf("%d", &option)== -1){
+            exit(1);
+        };
 
         switch (option)
         {
@@ -79,6 +82,7 @@ int initMenu(struct User *u, sqlite3 *db)
     printf("\n\t\t[3]- exit\n ");
     while (!r)
     {
+        clearBuffer();
         if (scanf("%d", &option) == -1)
         {
             exit(1);
@@ -88,6 +92,9 @@ int initMenu(struct User *u, sqlite3 *db)
         case 1:
             r = 1;
             r = loginMenu(u->name, u->password);
+            if (r == -1 ) {
+                exit(1);
+            }
             const char *password = getPassword(u, db);
             if (password == NULL || (password, "") == 0)
             {
@@ -144,6 +151,7 @@ int main()
     dataBase(0,&db);
     dataBase(1,&db);
     dataBase(2,&db);
+    dataBase(3,&db);
 
     // Check if databases were opened successfully
     if (db == NULL)

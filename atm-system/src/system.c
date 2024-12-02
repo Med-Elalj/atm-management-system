@@ -9,7 +9,7 @@ void createNewAcc(struct User u, sqlite3 *db)
     struct Account a;
     a.uId = u.id;
     a.creationDate = 1731679260 / 86400;
-    int s = 0;
+    int scan = 0;
 noAccount:
     queryAccountType(a.accountType);
     system("clear");
@@ -19,40 +19,38 @@ noAccount:
     do
     {
         printf("\nEnter the country: ");
-        s = scanf(" %50s", a.country);
-        while (getchar() != '\n')
-            ;
-
-    } while (s == 0 || s == 1 && validInput(a.country) == 0);
+        clearBuffer();
+        scan = scanf(" %50s", a.country);
+    } while (scan == 0 || scan == 1 && validInput(a.country) == 0);
     char phone[12];
     do
     {
         printf("\nEnter the phone number: ");
-        s = scanf("%11s", phone);
-        while (getchar() != '\n')
-            ;
+        clearBuffer();
+        scan = scanf("%11s", phone);
         a.phone = atoi(phone);
-    } while ((strlen(phone) != 10 && strlen(phone) != 11 && s == 1) || (a.phone <= 0 && s == 1) || s == 0);
+    } while ((strlen(phone) != 10 && strlen(phone) != 11 && scan == 1) || (a.phone <= 0 && scan == 1) || scan == 0);
     float b = 0.0;
     do
     {
         printf("\nEnter the initial deposit amount:");
-        s = scanf("%f", &b);
-        while (getchar() != '\n')
-            ;
+        clearBuffer();
+        scan = scanf("%f", &b);
         a.balance = b * 100;
-    } while (s == 0 || s == 1 && a.balance <= 0);
+    } while (scan == 0 || scan == 1 && a.balance <= 0);
     system("clear");
-    if (s == -1)
-    {
-        exit(2);
-    }
 conf:
     printf("\n\n\t\t\t===== Confirmation =====\n");
     printf("\nPhone number: %d\nCountry : %s\nInitial balance : %d.%2d\nAccount Type : %s\n", a.phone, a.country, a.balance / 100, a.balance % 100, a.accountType);
     printf("\nIs this data correct ?\n Y : Yes\n N : No\n Q : Back to Menu\n ");
     char confirm;
-    scanf(" %c", &confirm);
+
+    clearBuffer();
+    scan = scanf(" %c", &confirm);
+    if (scan == -1)
+    {
+        exit(2);
+    }
     while (getchar() != '\n')
         ;
     switch (confirm)
@@ -105,13 +103,17 @@ conf:
 
 void queryAccountType(char type[7])
 {
+
+    int scan = 0;
     system("clear");
     printf("\nEnter the type of account:\n\t-> savings\n\t-> current\n\t-> fixed01(for 1 year)\n\t-> fixed02(for 2 years)\n\t-> fixed03(for 3 years)\n\n\tEnter your choice:");
-    scanf("%7s", type);
-    while (strcmp(type, "savings") != 0 && strcmp(type, "current") != 0 && strcmp(type, "fixed01") != 0 && strcmp(type, "fixed02") != 0 && strcmp(type, "fixed03") != 0)
+    clearBuffer();
+    scan = scanf("%7s", type);
+    while (scan != -1 && strcmp(type, "savings") != 0 && strcmp(type, "current") != 0 && strcmp(type, "fixed01") != 0 && strcmp(type, "fixed02") != 0 && strcmp(type, "fixed03") != 0)
     {
         printf("Invalid input! Enter a valid type of account: ");
-        scanf("%7s", type);
+        clearBuffer();
+        scan = scanf("%7s", type);
     };
 };
 
@@ -181,7 +183,12 @@ checkAllAccounts:
 end:
     printf("All of your(%s) accounts are listed above.\n\tR : Refrech.\n\tQ : Quit.\n", u.name);
     char c;
-    printf("%d", scanf(" %c", &c));
+    clearBuffer();
+    int scan = scanf(" %c", &c);
+    if (scan == -1)
+    {
+        exit(2);
+    }
     switch (c)
     {
     case 'q':
@@ -198,6 +205,7 @@ end:
 void updateAccount(struct User u, sqlite3 *db)
 {
     int id = 0;
+    int scan = 0;
     char phone[12];
     const const char *update_sql;
     char c;
@@ -206,19 +214,17 @@ void updateAccount(struct User u, sqlite3 *db)
     {
         id = 0;
         printf("\nEnter the account number you want to update : ");
-        while (getchar() != '\n')
-            ;
-
-    } while (scanf("%d", &id) == 0);
+        clearBuffer();
+        scan = scanf(" %d", &id);
+    } while (scan == 0);
 
     do
     {
         c = 0;
         printf("witch info do you want to update ?\n\t[1] : Phone number\n\t[2] : Country of the Account\n");
-        scanf(" %c", &c);
-        while (getchar() != '\n')
-            ;
-    } while (c != '1' && c != '2');
+        clearBuffer();
+        scan = scanf(" %c", &c);
+    } while (c != '1' && c != '2' && scan != -1);
 
     if (c == '1')
     {
@@ -226,9 +232,9 @@ void updateAccount(struct User u, sqlite3 *db)
         do
         {
             printf("\nEnter the new phone number: ");
-            while (getchar() != '\n')
-                ;
-        } while (scanf("%11s", &phone[0]) == 0 || strlen(phone) < 10 || !is_all_digits(phone) || getchar() != 10);
+            clearBuffer();
+            scan = scanf("%11s", &phone[0]);
+        } while (scan == 0 || scan != -1 && (strlen(phone) < 10 || !is_all_digits(phone) || getchar() != 10));
     }
     else
     {
@@ -239,11 +245,11 @@ void updateAccount(struct User u, sqlite3 *db)
     {
         c = 0;
         printf("\nDo you want to update the information of account number %d to %s? (Y/N): ", id, phone);
-        scanf(" %c", &c);
-        while (getchar() != '\n')
-            ;
-    } while (c != 'y' && c != 'Y' && c != 'n' && c != 'N');
-    if (c == 'n' || c == 'N')
+        clearBuffer();
+        scan = scanf(" %c", &c);
+    } while (c != 'y' && c != 'Y' && c != 'n' && c != 'N' && scan != -1);
+
+    if (c == 'n' || c == 'N' || scan == -1)
     {
         printf("\n\nPhone number not updated.\n\n");
         return;
@@ -296,30 +302,27 @@ int is_all_digits(const char *str)
     return 1;
 };
 
-void makeTransaction(struct User u, sqlite3 *db) /*(sqlite3 *db, double amount, int accID1, const char *uName, int accID2, int uID2)*/
+void makeTransaction(struct User u, sqlite3 *db)
 {
     int amount, accID1, accID2 = 0;
     int scan = 0;
     do
     {
         printf("\nEnter the Origin account's account number : ");
-        for (int r = fgetc(stdin); r != EOF && r != 10; r = fgetc(stdin))
-            ;
+        clearBuffer();
         scan = scanf(" %d", &accID2);
     } while (scan == 0 || accID2 <= 0 && scan != -1);
     do
     {
         printf("\nEnter the Destination account number : ");
-        for (int r = fgetc(stdin); r != EOF && r != 10; r = fgetc(stdin))
-            ;
+        clearBuffer();
         scan = scanf(" %d", &accID1);
     } while (scan == 0 || accID2 <= 0 && scan != -1);
     do
     {
         printf("\nEnter the amount to transfer : ");
-        for (int r = fgetc(stdin); r != EOF && r != 10; r = fgetc(stdin))
-            ;
-        scan = scanf("%d", &amount);
+        clearBuffer();
+        scan = scanf(" %d", &amount);
     } while (scan == 0);
     if (accID1 == accID2)
     {
@@ -330,8 +333,7 @@ void makeTransaction(struct User u, sqlite3 *db) /*(sqlite3 *db, double amount, 
     do
     {
         printf("\nDo you want to proceed with the transaction? (Y/N): ");
-        for (int r = fgetc(stdin); r != EOF && r != 10; r = fgetc(stdin))
-            ;
+        clearBuffer();
         scan = scanf(" %c", &c);
     } while (scan == 0 || c != 'Y' && c != 'y' && c != 'n' && c != 'N' && scan != -1);
 
@@ -340,90 +342,41 @@ void makeTransaction(struct User u, sqlite3 *db) /*(sqlite3 *db, double amount, 
         printf("\n\nTransaction cancelled.\n\n");
         return;
     }
+
     int rc;
-
-    // Begin transaction explicitly
-    rc = sqlite3_exec(db, "BEGIN TRANSACTION;", 0, 0, 0);
-    if (rc != SQLITE_OK)
-    {
-        fprintf(stderr, "Failed to start transaction: %s\n", sqlite3_errmsg(db));
-        return;
-    }
-
-    sqlite3_stmt *stmt[3] = {NULL, NULL, NULL};
+    sqlite3_stmt *stmt = NULL;
     // Define the SQL statement with multiple queries
-    const char *sql[3] = {"UPDATE accounts SET balance = balance + ? WHERE accID = ? AND uID = (SELECT uId FROM users WHERE uName = ?); ",
-                          "UPDATE accounts SET balance = balance - ? WHERE accID = ? AND uID = ?; ",
-                          "INSERT INTO transactions (accID1, accID2, amount, timestamp) VALUES (?, ?, ?, CURRENT_TIMESTAMP); "};
+    const char *sql = "INSERT INTO transactions (accID1, accID2, amount) SELECT ?, ?, ? WHERE EXISTS (SELECT 1 FROM accounts WHERE accID = ? AND uID = ?);";
 
     // Prepare the SQL statement
-    for (int i = 0; i < 3; i++)
-    {
 
-        rc = sqlite3_prepare_v2(db, sql[i], -1, &stmt[i], NULL);
-        if (rc != SQLITE_OK)
-        {
-            fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
-            sqlite3_exec(db, "ROLLBACK;", 0, 0, 0); // Rollback if preparing fails
-            return;
-        }
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (rc != SQLITE_OK)
+    {
+        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        return;
     }
 
     // Bind the values to the statement
-    sqlite3_bind_int(stmt[0], 1, amount);                        // Bind amount to first "?"
-    sqlite3_bind_int(stmt[0], 2, accID1);                        // Bind accID1 to second "?"
-    sqlite3_bind_text(stmt[0], 3, u.name, -1, SQLITE_TRANSIENT); // Bind uName to third "?"
-    sqlite3_bind_int(stmt[1], 1, amount);                        // Bind amount to fourth "?"
-    sqlite3_bind_int(stmt[1], 2, accID2);                        // Bind accID2 to fifth "?"
-    sqlite3_bind_int(stmt[1], 3, u.id);                          // Bind uID2 to sixth "?"
-    sqlite3_bind_int(stmt[2], 1, accID2);                        // Bind accID2 to seventh "?"
-    sqlite3_bind_int(stmt[2], 2, accID1);                        // Bind accID1 to  eighth "?"
-    sqlite3_bind_int(stmt[2], 3, amount);                        // Bind amount to tenth "?"
+    sqlite3_bind_int(stmt, 1, accID1); // Bind accID1 to first "?"
+    sqlite3_bind_int(stmt, 2, accID2); // Bind accID2 to second "?"
+    sqlite3_bind_int(stmt, 3, amount); // Bind amount to third "?"
+    sqlite3_bind_int(stmt, 4, accID1); // Bind accID1 to fourth "?"
+    sqlite3_bind_int(stmt, 5, u.id);   // Bind u.id to fifth "?"
 
-    // Execute the queries (the transaction)
-    for (int i = 0; i < 3; i++)
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE)
     {
-        rc = sqlite3_step(stmt[i]);
-        if (rc != SQLITE_DONE)
-        {
-            fprintf(stderr, "Execution failed: %s\n", sqlite3_errmsg(db));
-            for (int i1 = 0; i1 < 3; i1++)
-            {
-                sqlite3_finalize(stmt[i1]);
-            };
-            sqlite3_exec(db, "ROLLBACK;", 0, 0, 0); // Rollback if execution fails
-            return;
-        }
-        printf("Execution %d \n", sqlite3_changes(db));
-        if (sqlite3_changes(db) != 1)
-        {
-            printf("\n\nTransaction failed. Please try again.\n\n");
-            for (int i1 = 0; i1 < 3; i1++)
-            {
-                sqlite3_finalize(stmt[i1]);
-            };
-            sqlite3_exec(db, "ROLLBACK;", 0, 0, 0); // Rollback if transaction fails
-            return;
-        }
-    };
+        fprintf(stderr, "Execution failed: %s\n", sqlite3_errmsg(db));
 
-    // Commit the transaction
-    rc = sqlite3_exec(db, "COMMIT;", 0, 0, 0);
-    if (rc != SQLITE_OK)
-    {
-        fprintf(stderr, "Failed to commit transaction: %s\n", sqlite3_errmsg(db));
-        sqlite3_exec(db, "ROLLBACK;", 0, 0, 0); // Rollback if commit fails
+        sqlite3_finalize(stmt);
         return;
     }
-
-    // Finalize the statements
-    for (int i1 = 0; i1 < 3; i1++)
-    {
-        sqlite3_finalize(stmt[i1]);
-    };
-    printf("\n\nTransaction successful.\n\n");
+    printf("Execution succeeded\n");
+    sqlite3_finalize(stmt);
     return;
-}
+};
 
 void removeAccount(struct User u, sqlite3 *db)
 {
@@ -432,8 +385,7 @@ void removeAccount(struct User u, sqlite3 *db)
     do
     {
         printf("\nEnter the account number to delete : ");
-        for (int r = fgetc(stdin); r != EOF && r != 10; r = fgetc(stdin))
-            ;
+        clearBuffer();
         scan = scanf(" %d", &accID);
     } while (scan == 0 || accID <= 0 && scan != -1);
 
@@ -441,8 +393,7 @@ void removeAccount(struct User u, sqlite3 *db)
     do
     {
         printf("\nDo you want to proceed with the deletion? (Y/N): ");
-        for (int r = fgetc(stdin); r != EOF && r != 10; r = fgetc(stdin))
-            ;
+        clearBuffer();
         scan = scanf(" %c", &c);
     } while (scan == 0 || c != 'Y' && c != 'y' && c != 'n' && c != 'N' && scan != -1);
     if (c == 'n' || c == 'N' || scan == -1)
@@ -503,22 +454,20 @@ void transferAccount(struct User u, sqlite3 *db)
     do
     {
         printf("\nEnter the account number to be tanfered : ");
-        for (int r = fgetc(stdin); r != EOF && r != 10; r = fgetc(stdin))
-            ;
+        clearBuffer();
         scan = scanf(" %d", &accID1);
     } while (scan == 0 || accID1 <= 0 && scan != -1);
     char uname2[50];
     do
     {
         printf("\nEnter the name of the recipient : ");
-        for (int r = fgetc(stdin); r != EOF && r != 10; r = fgetc(stdin))
-            ;
+        clearBuffer();
         scan = scanf(" %49s", &uname2[0]);
     } while (scan == 0 || (strlen(&uname2[0]) <= 2) && scan != -1);
     sqlite3_stmt *stmt1 = NULL;
-const char *sql1 = "UPDATE accounts "
-                   "SET uID = (SELECT uID FROM users WHERE uName = ?) "
-                   "WHERE accID = ? AND uID = ?;";
+    const char *sql1 = "UPDATE accounts "
+                       "SET uID = (SELECT uID FROM users WHERE uName = ?) "
+                       "WHERE accID = ? AND uID = ?;";
     sqlite3_prepare_v2(db, sql1, -1, &stmt1, NULL);
     sqlite3_bind_text(stmt1, 1, uname2, -1, SQLITE_STATIC);
     sqlite3_bind_int(stmt1, 2, accID1);
