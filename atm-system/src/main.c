@@ -19,7 +19,8 @@ void mainMenu(struct User u, sqlite3 *db)
         printf("\n\t\t[7]- Transfer ownership\n");
         printf("\n\t\t[8]- Exit\n");
         clearBuffer();
-        if (scanf("%d", &option)== -1){
+        if (scanf("%d", &option) == -1)
+        {
             exit(1);
         };
 
@@ -36,12 +37,12 @@ void mainMenu(struct User u, sqlite3 *db)
         case 3:
             // student TODO : add your **Check the details of existing accounts** function
             // here
-            checkAllAccounts(u, db,0);
+            checkAllAccounts(u, db, 0);
             // system("clear");
             break;
         case 4:
             // student DONE : add your **Check list of owned accounts** function
-            checkAllAccounts(u, db,1);
+            checkAllAccounts(u, db, 1);
             printf("\n\t");
             // system("clear");
             break;
@@ -148,10 +149,10 @@ int main()
     struct User u;
     sqlite3 *db = NULL;
     // Initialize databases
-    dataBase(0,&db);
-    dataBase(1,&db);
-    dataBase(2,&db);
-    dataBase(3,&db);
+    dataBase(0, &db);
+    dataBase(1, &db);
+    dataBase(2, &db);
+    dataBase(3, &db);
 
     // Check if databases were opened successfully
     if (db == NULL)
@@ -159,7 +160,7 @@ int main()
         fprintf(stderr, "Error opening database.\n");
         return 1; // Exit with an error code
     }
-    printf("Database %p,\n",db);
+    printf("Database %p,\n", db);
     // Initialize user and show menu
     for (; initMenu(&u, db) > 0;)
     {
