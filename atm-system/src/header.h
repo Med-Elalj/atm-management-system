@@ -31,6 +31,7 @@ struct User
 // authentication functions
 int loginMenu(char a[50], char pass[50]);
 int registerMenu(char a[50], char pass[50], sqlite3 *db);
+int insertNewUser(sqlite3 *db, char a[50], char pass[50]);
 const char *getPassword(struct User *u, sqlite3 *udb);
 void getuid(struct User *u, sqlite3 *db);
 int validInput(char *input);

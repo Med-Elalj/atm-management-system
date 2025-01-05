@@ -70,74 +70,66 @@ void mainMenu(struct User u, sqlite3 *db)
     };
 };
 
+// return 0 to continue sucessfully
+// return 1 to exit program
 int initMenu(struct User *u, sqlite3 *db)
 {
-    int r = 0;
-    int option = 5;
-    printf("%d\n", option);
-    // system("clear");
-    printf("\n\n\t\t======= ATM =======\n");
-    printf("\n\t\t-->> Feel free to login / register :\n");
-    printf("\n\t\t[1]- login\n");
-    printf("\n\t\t[2]- register\n");
-    printf("\n\t\t[3]- exit\n ");
-    while (!r)
+    int option = 0;
+    system("clear");
+    while (1)
     {
+        printf("\n\n\t\t======= ATM =======\n");
+        printf("\n\t\t-->> Feel free to login / register :\n");
+        printf("\n\t\t[1]- login\n");
+        printf("\n\t\t[2]- register\n");
+        printf("\n\t\t[3]- exit\n ");
         clearBuffer();
         if (scanf("%d", &option) == -1)
         {
-            exit(1);
+            return 1;
         };
+
         switch (option)
         {
         case 1:
-            r = 1;
-            r = loginMenu(u->name, u->password);
-            if (r == -1 ) {
-                exit(1);
+            if (loginMenu(u->name, u->password) == 1)
+            {
+                return 1;
             }
             const char *password = getPassword(u, db);
-            if (password == NULL || (password, "") == 0)
-            {
-                r = 0;
-            };
-            if (r != 1)
-            {
-                printf("\n\nLogin Failed!");
-                free((void *)password);
-                return 1;
-            };
-            if (strcmp(u->password, password) == 0)
+            if (password == NULL || strcmp(password, "") == 0 || strcmp(u->password, password) != 0)
             {
                 printf("\n\nWelcome %s", u->name);
+                free((void *)password);
+                return 0;
             }
             else
             {
                 system("clear");
                 printf("\nWrong password or User Name\n");
                 free((void *)password);
-                return 1;
+                continue;
             }
-            free((void *)password);
-            return 0;
+
         case 2:
-            // // student TODO : add your **Registration** function
-            // // here
+
             if (registerMenu(u->name, u->password, db) == 0)
             {
+                system("clear");
                 printf("\nRegistration Successful!");
             }
             else
             {
+                system("clear");
                 printf("\n\nRegistration Failed!");
             };
-            r = 0;
-            return 0;
+            continue;
+
         case 3:
             system("clear");
-            exit(1);
-            return 0;
+            return 1;
         default:
+            system("clear");
             printf("Insert a valid operation!\n");
         };
     };
