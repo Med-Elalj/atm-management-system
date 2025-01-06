@@ -1,6 +1,7 @@
 #include "header.h"
 #include <sqlite3.h>
 #include <ctype.h>
+#include <stdarg.h>
 
 void createNewAcc(struct User u, sqlite3 *db)
 {
@@ -36,38 +37,14 @@ noAccount:
         a.balance = b * 100;
     } while (scan == 0 || scan == 1 && a.balance <= 0);
     system("clear");
-conf:
-    printf("\n\n\t\t\t===== Confirmation =====\n");
-    printf("\nPhone number: %d\nCountry : %s\nInitial balance : %d.%2d\nAccount Type : %s\n", a.phone, a.country, a.balance / 100, a.balance % 100, a.accountType);
-    printf("\nIs this data correct ?\n Y : Yes\n N : No\n Q : Back to Menu\n ");
-    char confirm;
-
-    clearBuffer();
-    scan = scanf(" %c", &confirm);
-    if (scan == -1)
+    if (confirm("\n\n\t\t\t===== Confirmation =====\n"
+                    "\nPhone number: %d\nCountry : %s\nInitial balance : %d.%2d\nAccount Type : %s\n"
+                    "\nIs this data correct ?\n Y : Yes\n N : No\n ",
+                    "Account Creation Canceled\n",
+                    a.phone, a.country, a.balance / 100, a.balance % 100, a.accountType))
     {
-        exit(2);
-    }
-    while (getchar() != '\n')
-        ;
-    switch (confirm)
-    {
-    case 'N':
-    case 'n':
-        goto noAccount;
-    case 'Q':
-    case 'q':
-        return;
-    case 'Y':
-    case 'y':
-        system("clear");
-        break;
-    default:
-        system("clear");
-        printf("\nInvalid input! Please chonse from (Y/N/Q).\n");
-        goto conf;
-    }
     db_createNewAccount(a, db);
+    }
 };
 
 void queryAccountType(char type[7])
@@ -90,7 +67,7 @@ void updateAccount(struct User u, sqlite3 *db)
 {
     int id = 0;
     int scan = 0;
-    char phone[12];
+    char data[12];
     char c;
 
     do
@@ -115,35 +92,20 @@ void updateAccount(struct User u, sqlite3 *db)
         {
             printf("\nEnter the new phone number: ");
             clearBuffer();
-            scan = scanf("%11s", &phone[0]);
-        } while (scan == 0 || scan != -1 && (strlen(phone) < 10 || !is_all_digits(phone) || getchar() != 10));
+            scan = scanf("%11s", &data[0]);
+        } while (scan == 0 || scan != -1 && (strlen(data) < 10 || !is_all_digits(data) || getchar() != 10));
     }
     else
     {
-        queryAccountType(phone);
+        queryAccountType(data);
     };
-    int check;
-    do
-    {
-        check = 0;
-        printf("\nDo you want to update the information of account number %d to %s? (Y/N): ", id, phone);
-        clearBuffer();
-        scan = scanf(" %c", &check);
-    } while (check != 'y' && check != 'Y' && check != 'n' && check != 'N' && scan != -1);
 
-    if (check == 'n' || check == 'N' || scan == -1)
+    if (confirm("\nDo you want to update the information of account number %d to %s? (Y/N): ","Account data not updated.", id, data))
     {
-        printf("\n\nPhone number not updated.\n\n");
-        return;
+        system("clear");
+        db_updateAccount(db, c, data, id, u.id);
     }
 
-    if (scan == -1)
-    {
-        sqlite3_close(db);
-        exit(1);
-    };
-
-    return db_updateAccount(db, c, phone, id, u.id);
 };
 
 int is_all_digits(const char *str)
@@ -186,21 +148,11 @@ void makeTransaction(struct User u, sqlite3 *db)
         printf("\n\nCannot transfer to the same account.\n\n");
         return;
     }
-    char c = 0;
-    do
-    {
-        printf("\nDo you want to proceed with the transaction? (Y/N): ");
-        clearBuffer();
-        scan = scanf(" %c", &c);
-    } while (scan == 0 || c != 'Y' && c != 'y' && c != 'n' && c != 'N' && scan != -1);
 
-    if (c == 'n' || c == 'N' || scan == -1)
-    {
-        printf("\n\nTransaction cancelled.\n\n");
-        return;
+    if (confirm("\nDo you want to proceed with the transaction? (Y/N): ","Transaction cancelled.\n\n")) {
+        db_makeTransaction(db, accID1, accID2, amount, u.id);
     }
-
-    return db_makeTransaction(db, accID1, accID2, amount, u.id);
+    return;
 }
 
 void removeAccount(struct User u, sqlite3 *db)
@@ -214,20 +166,13 @@ void removeAccount(struct User u, sqlite3 *db)
         scan = scanf(" %d", &accID);
     } while (scan == 0 || accID <= 0 && scan != -1);
 
-    char c = 0;
-    do
+    if (confirm("\nDo you want to proceed with the deletion? (Y/N): ","Deletion cancelled.\n\n"))
     {
-        printf("\nDo you want to proceed with the deletion? (Y/N): ");
-        clearBuffer();
-        scan = scanf(" %c", &c);
-    } while (scan == 0 || c != 'Y' && c != 'y' && c != 'n' && c != 'N' && scan != -1);
-    if (c == 'n' || c == 'N' || scan == -1)
-    {
-        printf("\n\nDeletion cancelled.\n\n");
-        return;
+        db_removeAccount(db, accID, u.id);
     }
-    return db_removeAccount(db, accID, u.id);
-}
+    return;
+
+};
 
 void transferAccount(struct User u, sqlite3 *db)
 {
@@ -254,4 +199,39 @@ void transferAccount(struct User u, sqlite3 *db)
     };
 
     return db_transferAccount(db, uname2, accID1, u.id);
+}
+
+void checkAllAccounts(struct User u, sqlite3 *db, int t)
+{
+    while(1){
+        system("clear");
+        db_printAccountsOfUser(u,db,t);
+        if (confirm("All of your(%s) accounts are listed above.\n\t Would You like to Re Fresh?\n\tY :Yes (Refrech).\n\tN : No (Back to menu).\n","", u.name)){
+            return;
+        };
+    }
+};
+
+int confirm(const char *format, const char *cancel_msg, ...) {
+    va_list args;
+    va_start(args, format);
+    int scan = 0;
+    char c = 0;
+    
+    do
+    {
+        vprintf(format, args);
+        clearBuffer();
+        scan = scanf(" %c", &c);
+    } while (scan == 0 || c != 'Y' && c != 'y' && c != 'n' && c != 'N' && scan != -1);
+    
+    va_end(args);
+    
+    if (c == 'n' || c == 'N' || scan == -1)
+    {
+        printf("\n\n%s\n\n",cancel_msg);
+        return 0;
+    }
+
+    return 1;
 }

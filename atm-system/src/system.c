@@ -36,31 +36,7 @@ void db_createNewAccount(struct Account a, sqlite3 *db)
     printf("\n\nAccount created successfully!\n\n");
 }
 
-void checkAllAccounts(struct User u, sqlite3 *db, int t)
-{
-    while(1){
-        system("clear");
-        db_printAccountsOfUser(u,db,t);
-        printf("\n");
-        while(1) {
 
-            printf("All of your(%s) accounts are listed above.\n\tR : Refrech.\n\tQ : Quit.\n", u.name);
-            char c;
-            clearBuffer();
-            int scan = scanf(" %c", &c);
-            if (scan == -1)
-            {
-                sqlite3_close(db);
-                exit(1);
-            };
-            if (c == 'q' || c == 'Q') {
-                return;
-            } else if (c == 'r' || c == 'R') {
-                break;
-            };
-        }
-    }
-};
 
 void db_printAccountsOfUser(struct User u, sqlite3 *db, int t)
 {

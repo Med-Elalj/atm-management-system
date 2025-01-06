@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sqlite3.h>
 #include <time.h>
+#include <stdarg.h>
 
 struct Date
 {
@@ -37,23 +38,27 @@ int getuid(struct User *u, sqlite3 *db);
 int validInput(char *input);
 
 // system function
-void createNewAcc(struct User u, sqlite3 *db);
 void db_createNewAccount(struct Account a, sqlite3 *db);
 void db_printAccountsOfUser(struct User u, sqlite3 *db, int t);
-void mainMenu(struct User u, sqlite3 *db);
-void checkAllAccounts(struct User u,sqlite3 *db,int t);
-void queryAccountType(char type[7]);
-void updateAccount(struct User u,sqlite3 *db);
 void db_updateAccount(sqlite3 * db, int c, char  phone[12], int id, int uid);
-int is_all_digits(const char *str);
-void makeTransaction(struct User u, sqlite3 *db);
 void db_makeTransaction(sqlite3 *db, int accID1, int accID2, int amount, int uid);
-void removeAccount(struct User u,sqlite3 *db);
 void db_removeAccount(sqlite3 *db, int accID, int azer);
-void transferAccount(struct User u,sqlite3 *db);
 void db_transferAccount(sqlite3 *db, char uname2[50], int accID1, int azer);
 
 // database functions
 void dataBase(int i, sqlite3 **db);
 void get_current_date(struct Date *now);
 void clearBuffer();
+
+// ui functions
+void createNewAcc(struct User u, sqlite3 *db);
+void queryAccountType(char type[7]);
+void updateAccount(struct User u,sqlite3 *db);
+int is_all_digits(const char *str);
+void makeTransaction(struct User u, sqlite3 *db);
+void removeAccount(struct User u,sqlite3 *db);
+void transferAccount(struct User u,sqlite3 *db);
+void checkAllAccounts(struct User u,sqlite3 *db,int t);
+int confirm(const char *format, const char *cancel_msg, ...);
+
+void mainMenu(struct User u, sqlite3 *db);
