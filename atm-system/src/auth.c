@@ -263,20 +263,20 @@ int insertNewUser(sqlite3 *db, char uName[50], char pass[50])
     return 0;
 };
 
-void getuid(struct User *u,sqlite3 *db) {
+int getuid(struct User *u,sqlite3 *db) {
     const char *get_uId = "SELECT uId FROM users WHERE uName = ?;";
     sqlite3_stmt *stmt;
     int rc;
     rc = sqlite3_prepare_v2(db, get_uId, -1, &stmt, 0);
     if (rc!= SQLITE_OK) {
         fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
-        return;
+        return 1;
     }
     rc = sqlite3_bind_text(stmt, 1, u->name, -1, SQLITE_TRANSIENT);
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Failed to bind parameter: %s\n", sqlite3_errmsg(db));
         sqlite3_finalize(stmt);
-        return;
+        return 1;
     }
     rc = sqlite3_step(stmt);
     if (rc == SQLITE_ROW) {
@@ -293,4 +293,5 @@ void getuid(struct User *u,sqlite3 *db) {
 
     // Finalize the statement to free resources
     sqlite3_finalize(stmt);
+    return 0;
 };

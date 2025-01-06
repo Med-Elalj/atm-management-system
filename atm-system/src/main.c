@@ -4,10 +4,9 @@
 void mainMenu(struct User u, sqlite3 *db)
 {
     system("clear");
+    int option;
     while (1)
     {
-        printf("%d %s\n", u.id, u.name);
-        int option;
         printf("\n\n\t\t======= ATM =======\n\n");
         printf("\n\t\t-->> Feel free to choose one of the options below <<--\n");
         printf("\n\t\t[1]- Create a new account\n");
@@ -21,6 +20,7 @@ void mainMenu(struct User u, sqlite3 *db)
         clearBuffer();
         if (scanf("%d", &option) == -1)
         {
+            sqlite3_close(db);
             exit(1);
         };
 
@@ -28,43 +28,43 @@ void mainMenu(struct User u, sqlite3 *db)
         {
         case 1:
             createNewAcc(u, db);
+            system("clear");
             break;
         case 2:
             // student TODO : add your **Update account information** function
             updateAccount(u, db);
-            // here
+            system("clear");
             break;
         case 3:
             // student TODO : add your **Check the details of existing accounts** function
-            // here
             checkAllAccounts(u, db, 0);
-            // system("clear");
+            system("clear");
             break;
         case 4:
             // student DONE : add your **Check list of owned accounts** function
             checkAllAccounts(u, db, 1);
-            printf("\n\t");
-            // system("clear");
+            system("clear");
             break;
         case 5:
             // student TODO : add your **Make transaction** function
             makeTransaction(u, db);
-            // here
+            system("clear");
             break;
         case 6:
             // student TODO : add your **Remove existing account** function
             removeAccount(u, db);
-            // here
+            system("clear");
             break;
         case 7:
             // student TODO : add your **Transfer owner** function
             transferAccount(u, db);
-            // here
+            system("clear");
             break;
         case 8:
-            exit(1);
-            // break;
+            return;
+            system("clear");
         default:
+            system("clear");
             printf("Invalid operation!\n");
         };
     };
@@ -101,7 +101,7 @@ int initMenu(struct User *u, sqlite3 *db)
             {
                 printf("\n\nWelcome %s", u->name);
                 free((void *)password);
-                return 0;
+                return getuid(&u, db);
             }
             else
             {
@@ -150,21 +150,18 @@ int main()
     if (db == NULL)
     {
         fprintf(stderr, "Error opening database.\n");
-        return 1; // Exit with an error code
+        return 1;
     }
     printf("Database %p,\n", db);
     // Initialize user and show menu
-    for (; initMenu(&u, db) > 0;)
+    switch (initMenu(&u, db))
     {
-    };
-    getuid(&u, db);
-    mainMenu(u, db);
-    // u.id = 1;
-    // checkAllAccounts(u,db);
-    // printf("Database\n");
-    // Close databases
-    sqlite3_close(db);
-    // sqlite3_close(db);
-
-    return 0;
+        case 0:
+            mainMenu(u, db);
+            sqlite3_close(db);
+            return 0;
+        case 1:
+            sqlite3_close(db);
+            return 1;
+    }
 }
