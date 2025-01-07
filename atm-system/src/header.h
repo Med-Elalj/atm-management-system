@@ -31,11 +31,14 @@ struct User
 
 // authentication functions
 int loginMenu(char a[50], char pass[50]);
-int registerMenu(char a[50], char pass[50], sqlite3 *db);
 int insertNewUser(sqlite3 *db, char a[50], char pass[50]);
 const char *getPassword(struct User *u, sqlite3 *udb);
 int getuid(struct User *u, sqlite3 *db);
 int validInput(char *input);
+int checkUsername(const char *username, sqlite3 *db);
+
+// authentication ui functions
+int registerMenu(char a[50], char pass[50], sqlite3 *db);
 
 // system function
 void db_createNewAccount(struct Account a, sqlite3 *db);
