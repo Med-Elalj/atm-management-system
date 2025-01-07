@@ -59,6 +59,6 @@ void makeTransaction(struct User u, sqlite3 *db);
 void removeAccount(struct User u,sqlite3 *db);
 void transferAccount(struct User u,sqlite3 *db);
 void checkAllAccounts(struct User u,sqlite3 *db,int t);
-int confirm(const char *format, const char *cancel_msg, ...);
+int confirm(const char *cancel_msg, const char *format, ...);
 
 void mainMenu(struct User u, sqlite3 *db);

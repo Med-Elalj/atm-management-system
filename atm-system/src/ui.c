@@ -37,10 +37,10 @@ noAccount:
         a.balance = b * 100;
     } while (scan == 0 || scan == 1 && a.balance <= 0);
     system("clear");
-    if (confirm("\n\n\t\t\t===== Confirmation =====\n"
+    if (confirm("Account Creation Canceled\n",
+                    "\n\n\t\t\t===== Confirmation =====\n"
                     "\nPhone number: %d\nCountry : %s\nInitial balance : %d.%2d\nAccount Type : %s\n"
                     "\nIs this data correct ?\n Y : Yes\n N : No\n ",
-                    "Account Creation Canceled\n",
                     a.phone, a.country, a.balance / 100, a.balance % 100, a.accountType))
     {
     db_createNewAccount(a, db);
@@ -100,7 +100,7 @@ void updateAccount(struct User u, sqlite3 *db)
         queryAccountType(data);
     };
 
-    if (confirm("\nDo you want to update the information of account number %d to %s? (Y/N): ","Account data not updated.", id, data))
+    if (confirm("Account data not updated.", "\nDo you want to update the information of account number %d to %s? (Y/N): ", id, data))
     {
         system("clear");
         db_updateAccount(db, c, data, id, u.id);
@@ -149,7 +149,7 @@ void makeTransaction(struct User u, sqlite3 *db)
         return;
     }
 
-    if (confirm("\nDo you want to proceed with the transaction? (Y/N): ","Transaction cancelled.\n\n")) {
+    if (confirm("Transaction cancelled.\n\n","\nDo you want to proceed with the transaction? (Y/N): ")) {
         db_makeTransaction(db, accID1, accID2, amount, u.id);
     }
     return;
@@ -166,7 +166,7 @@ void removeAccount(struct User u, sqlite3 *db)
         scan = scanf(" %d", &accID);
     } while (scan == 0 || accID <= 0 && scan != -1);
 
-    if (confirm("\nDo you want to proceed with the deletion? (Y/N): ","Deletion cancelled.\n\n"))
+    if (confirm("Deletion cancelled.\n\n","\nDo you want to proceed with the deletion? (Y/N): "))
     {
         db_removeAccount(db, accID, u.id);
     }
@@ -206,13 +206,13 @@ void checkAllAccounts(struct User u, sqlite3 *db, int t)
     while(1){
         system("clear");
         db_printAccountsOfUser(u,db,t);
-        if (confirm("All of your(%s) accounts are listed above.\n\t Would You like to Re Fresh?\n\tY :Yes (Refrech).\n\tN : No (Back to menu).\n","", u.name)){
+        if (confirm("","All of your(%s) accounts are listed above.\n\t Would You like to Re Fresh?\n\tY :Yes (Refrech).\n\tN : No (Back to menu).\n", u.name)){
             return;
         };
     }
 };
 
-int confirm(const char *format, const char *cancel_msg, ...) {
+int confirm(const char *cancel_msg,const char *format,  ...) {
     va_list args;
     va_start(args, format);
     int scan = 0;
