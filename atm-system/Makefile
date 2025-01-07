@@ -1,5 +1,5 @@
 # List of object files
-objects = src/main.o src/system.o src/auth.o src/db.o
+objects = src/main.o src/system.o src/auth.o src/db.o src/auth_ui.o src/ui.o
 
 # The default target
 atm: $(objects)

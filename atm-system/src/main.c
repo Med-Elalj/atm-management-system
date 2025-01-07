@@ -101,7 +101,7 @@ int initMenu(struct User *u, sqlite3 *db)
             {
                 printf("\n\nWelcome %s", u->name);
                 free((void *)password);
-                return getuid(&u, db);
+                return getuid(u, db);
             }
             else
             {
