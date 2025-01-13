@@ -49,17 +49,21 @@ int registerMenu(char uName[50], char pass[50], sqlite3 *db)
 {
     int scan = 0;
     struct termios oflags, nflags;
-    int azer = 1;
 
-    while (azer)
+    while (1)
     {
         system("clear");
-        printf("\n\n\n\t\t\t\t   Bank Management System\nValid Login contains between 2 and 49 alphabetical charachters\n\t\t\t\t\t Insert Your User Login:");
         do
         {
+            printf("\n\n\n\t\t\t\t   Bank Management System\nValid Login contains between 2 and 49 alphabetical charachters\n\t\t\t\t\t Insert Your User Login:");
             clearBuffer();
             scan = scanf("%49s", uName);
         } while (scan != -1 && (uName == "" || uName == NULL || !validInput(uName)));
+        
+        if (scan == -1)
+        {
+            return 1;
+        }
         if (checkUsername(uName, db))
         {
             system("clear");
@@ -91,16 +95,16 @@ int registerMenu(char uName[50], char pass[50], sqlite3 *db)
     system("clear");
     while (1)
     {
-        printf("\n\n\n\n\n\t\t\t\tEnter Your password :");
         do
         {
+            printf("\n\n\n\n\n\t\t\t\tEnter Your password :");
             clearBuffer();
             scan != scanf("%49s", pass);
         } while (scan != -1 && (pass == "" || pass == NULL || !validInput(pass)));
         char ver_pass[50];
-        printf("\n\n\n\n\n\t\t\t\tConfirm Your password :");
         do
         {
+            printf("\n\n\n\n\n\t\t\t\tConfirm Your password %s:",pass);
             clearBuffer();
             scan = scanf("%49s", ver_pass);
         } while (scan != -1 && (ver_pass == "" || ver_pass == NULL || !validInput(ver_pass)));

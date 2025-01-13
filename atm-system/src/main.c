@@ -88,6 +88,7 @@ int initMenu(struct User *u, sqlite3 *db)
         {
             return 1;
         };
+        printf("\n\tazer %d\n", option);
 
         switch (option)
         {
@@ -112,15 +113,16 @@ int initMenu(struct User *u, sqlite3 *db)
             }
 
         case 2:
+        printf("\nPassword");
 
             if (registerMenu(u->name, u->password, db) == 0)
             {
-                system("clear");
+                // system("clear");
                 printf("\nRegistration Successful!");
             }
             else
             {
-                system("clear");
+                // system("clear");
                 printf("\n\nRegistration Failed!");
             };
             continue;

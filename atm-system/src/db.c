@@ -1,5 +1,6 @@
 #include <sqlite3.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 int execute_sql(sqlite3 *db, const char *sql)
 {
@@ -24,6 +25,11 @@ void dataBase(int i, sqlite3 **db)
     if (*db == NULL)
     {
         rc = sqlite3_open("data/main.db", db);
+        if (rc != SQLITE_OK) {
+            fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(*db));
+            sqlite3_close(*db);
+            exit(1);
+        }
     }
     printf("Database %p\n", *db);
 

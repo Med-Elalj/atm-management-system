@@ -1,6 +1,7 @@
 #include <sqlite3.h>
 #include "header.h"
 #include <ctype.h>
+#include <string.h>
 
 char *USERS = "./data/users.txt";
 
@@ -101,7 +102,7 @@ int checkUsername(const char *username, sqlite3 *db)
 int insertNewUser(sqlite3 *db, char uName[50], char pass[50])
 {
     // insert new user into database
-    const char *insert_sql = "INSERT INTO users(uName, uPassword) VALUES(?,?);";
+    const char *insert_sql = "INSERT INTO users (uName, uPassword) VALUES (?,?);";
     sqlite3_stmt *stmt;
     int rc;
 
